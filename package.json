@@ -10,7 +10,13 @@
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "files": [
+    "src",
+    "dist",
+    "index.js",
+    "package.json"
+  ],
+  "author": "wanxl",
   "license": "ISC",
   "devDependencies": {
     "@babel/generator": "^7.20.4",
