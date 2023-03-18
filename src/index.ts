@@ -61,6 +61,11 @@ export default (ctx: IPluginContext) => {
 					'topLevelAwait'
 				]
 			});
+			parserResult.program.body.forEach(item => {
+				if (item['source']?.value?.startsWith('../../src/')) {
+					item['source'].value = item['source'].value.replace('../../src/', './');
+				}
+			});
 			parserResult.program.body[0]['source'].value = './area-config-template';
 			const newConfigTS = generator(parserResult, {retainLines: false});
 			fs.writeFileSync(targetConfigPath, newConfigTS.code);
@@ -68,12 +73,22 @@ export default (ctx: IPluginContext) => {
 			fs.copyFileSync(sourceLogoFilePath, targetLogoFilePath);
 			traverse(parserResult, {
 				ObjectProperty(p) {
-					if (p.node.key.name === 'appId') {
-						const projectConfigJsonFilePath = path.join(appPath, 'project.config.json');
-						const fileContent = fs.readFileSync(projectConfigJsonFilePath);
-						const projectConfig = JSON.parse(fileContent);
-						projectConfig.appid = p.node.value.value;
-						fs.writeFileSync(projectConfigJsonFilePath, JSON.stringify(projectConfig, null, '\t'));
+					if (p.node.key.name === 'appIdMap') {
+						p.node.value.properties?.forEach(p => {
+							if (p.key.name === 'weapp') {
+								const projectConfigJsonFilePath = path.join(appPath, 'project.config.json');
+								const fileContent = fs.readFileSync(projectConfigJsonFilePath);
+								const projectConfig = JSON.parse(fileContent);
+								projectConfig.appid = p.value.value;
+								fs.writeFileSync(projectConfigJsonFilePath, JSON.stringify(projectConfig, null, '\t'));
+							} else if (p.key.name === 'toutiao') {
+								const projectConfigJsonFilePath = path.join(appPath, 'project.tt.json');
+								const fileContent = fs.readFileSync(projectConfigJsonFilePath);
+								const projectConfig = JSON.parse(fileContent);
+								projectConfig.appid = p.value.value;
+								fs.writeFileSync(projectConfigJsonFilePath, JSON.stringify(projectConfig, null, '\t'));
+							}
+						});
 					}
 				}
 			});
